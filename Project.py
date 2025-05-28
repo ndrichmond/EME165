@@ -34,7 +34,7 @@ def aCyl(r,h):
 
 #node variable setup
 n = 5  #number of nodes in the radial direction
-m = 200 #number of nodes in the axial direction in the core
+m = 12 #number of nodes in the axial direction in the core
 M = 5  #number of nodes in the axial direction in the handle
 
 nInd = n - 1 #for the purpose of indexing 
