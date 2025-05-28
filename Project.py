@@ -1,8 +1,5 @@
 import numpy as np
 from matplotlib import pyplot as plt
-import math
-import scipy as sp
-import time
 
 #variable setup
 T_air = 20 + 273.15 #kelvin
@@ -138,12 +135,28 @@ while deltaT > tolerance and iterationCounter < 1000:
     # - there is certainly a better way to do this with a function which i may implement
 
     #center edge nodes "corners"
+    T_handle[0,MInd] = (T_handle_last[0,MInd-1]*(k_handle*aAnn(0,dr/2)/(dx_h/2)) + 
+                        T_handle_last[1,MInd]*(k_handle*aCyl(dr/2,dx_h/2)/(dr/2)) + 
+                        T_luke*(aAnn(0,dr/2)/R_tc_luke) +
+                        qgen(0,dr/2,dx_h/2)) / ((k_handle*aAnn(0,dr/2)/(dx_h/2)) + (k_handle*aCyl(dr/2,dx_h/2)/(dr/2)) + (aAnn(0,dr/2)/R_tc_luke))
 
+    T_handle[0,0] = (T_handle_last[0,1]*(k_handle*aAnn(0,dr/2)/(dx_h/2)) +
+                     T_handle_last[1,0]*(k_handle*aCyl(dr/2,dx_h/2)/(dr/2)) + 
+                     T_core_last[0,0]*(aAnn(0,dr/2)/R_tc) + 
+                     qgen(0,dr/2,dx_h/2)) / ((k_handle*aAnn(0,dr/2)/(dx_h/2)) + (k_handle*aCyl(dr/2,dx_h/2)/(dr/2)) + (aAnn(0,dr/2)/R_tc))
 
-
-
-
-    #print(T_core)
+    #outer edge nodes "coner"
+    T_handle[nInd,MInd] = (T_handle_last[nInd-1,MInd]*(k_handle*aCyl(r_core - dr/2,dx_h/2)/(dr/2)) + 
+                           T_handle_last[nInd,MInd-1]*(k_handle*aAnn(r_core - dr/2,r_core)/(dx_h/2)) + 
+                           T_luke*((aCyl(r_core,dx_h/2) + aAnn(r_core + dr/2,r_core))/(R_tc_luke)) + 
+                           qgen(r_core + dr/2,r_core,dx_h/2)) / ((k_handle*aCyl(r_core - dr/2,dx_h/2)/(dr/2)) + (k_handle*aAnn(r_core - dr/2,r_core)/(dx_h/2)) + ((aCyl(r_core,dx_h/2) + aAnn(r_core + dr/2,r_core))/(R_tc_luke)))
+    
+    T_handle[nInd,0] = (T_handle_last[nInd-1,0]*(k_handle*aCyl(r_core - dr/2,dx_h/2)/(dr/2)) + 
+                        T_handle_last[nInd,1]*(k_handle*aAnn(r_core - dr/2,r_core)/(dx_h/2)) + 
+                        T_luke*(aCyl(r_core,dx_h/2)/R_tc_luke) + 
+                        T_core_last[nInd,0]*(aAnn(r_core - dr/2,r_core)/R_tc) + 
+                        qgen(r_core - dr/2,r_core,dx_h/2)) / ((k_handle*aCyl(r_core - dr/2,dx_h/2)/(dr/2)) + (k_handle*aAnn(r_core - dr/2,r_core)/(dx_h/2)) + (aCyl(r_core,dx_h/2)/R_tc_luke) + (aAnn(r_core - dr/2,r_core)/R_tc))
+    
     #t_core_updated = T_core.copy()
     #t_handle_updated = T_handle.copy()
 
