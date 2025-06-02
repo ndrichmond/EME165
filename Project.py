@@ -31,8 +31,8 @@ def aCyl(r,h):
 
 #node variable setup
 n = 20  #number of nodes in the radial direction 
-m = 7 #number of nodes in the axial direction in the core
-M = 30  #number of nodes in the axial direction in the handle
+m = 5 #number of nodes in the axial direction in the core
+M = 5  #number of nodes in the axial direction in the handle
 
 nInd = n - 1 #for the purpose of indexing 
 mInd = m - 1 #for the purpose of indexing 
@@ -240,35 +240,54 @@ print("T_handle:")
 print(T_handle)
 '''
 
+#plotting with the help of ChatGPT
 Nr, Nz_core = T_core.shape
 Nr, Nz_handle = T_handle.shape
 
+# Define the original radial and axial coordinates
 r = np.linspace(0, r_core, Nr)
-z_core = np.linspace(0 + dx_c/2,L_1, Nz_core)
-z_handle = np.linspace(-L_2,0 - dx_h/2, Nz_handle)
+z_core = np.linspace(0, L_1, Nz_core)
+z_handle = np.linspace(-L_2, 0, Nz_handle)
 
-R, Z_core = np.meshgrid(r, z_core, indexing='ij')
-R, Z_handle = np.meshgrid(r, z_handle, indexing='ij')  # use 'ij' for (r, z) ordering
+#correct the physical lengths to reflect the control volume sizes
+print(z_core)
 
-T_mirrored_core = np.vstack([np.flipud(T_core), T_core])  # shape: (2*Nr, Nz)
-r_mirrored_core = np.hstack([-np.flip(r), r])   # shape: (2*Nr,)
-R_mirrored_core, Z_mirrored_core = np.meshgrid(r_mirrored_core, z_core, indexing='ij')
+'''
+i = 1
+while i < len(z_core):
+    z_core[i] -= dx_c/4
+    i += 1
+'''
+#z_core[len(z_core) - 2] += dx_c/4
+#z_core[len(z_core) - 1] -= dx_c/2
+#print(z_handle)
 
-T_mirrored_handle = np.vstack([np.flipud(T_handle_flipped), T_handle_flipped])  # shape: (2*Nr, Nz)
-r_mirrored_handle = np.hstack([-np.flip(r), r])   # shape: (2*Nr,)
-R_mirrored_handle, Z_mirrored_handle = np.meshgrid(r_mirrored_handle, z_handle, indexing='ij')
+print(z_core)
 
+# Meshgrid for plotting
+R_core, Z_core = np.meshgrid(r, z_core, indexing='ij')
+R_handle, Z_handle = np.meshgrid(r, z_handle, indexing='ij')
+
+# Get min/max for consistent color scaling
 tmin = min(T_core.min(), T_handle.min())
 tmax = max(T_core.max(), T_handle.max())
 
+# Plot
 plt.figure(figsize=(8, 5))
-plt.pcolormesh(Z_mirrored_core, R_mirrored_core, T_mirrored_core, cmap='viridis', shading='auto',vmin=tmin,vmax=tmax)
-plt.pcolormesh(Z_mirrored_handle, R_mirrored_handle, T_mirrored_handle, cmap='viridis', shading='auto',vmin=tmin,vmax=tmax)
-#plt.axvline(x=0, color='black', linestyle='-', linewidth=1.5)
+plt.axvline(x=0, color='black', linestyle='-', linewidth=1.5)
+plt.axvline(x=0.15, color='black', linestyle='-', linewidth=1.5)
+plt.axvline(x=0.45, color='black', linestyle='-', linewidth=1.5)
+plt.axvline(x=0.75, color='black', linestyle='-', linewidth=1.5)
+plt.axvline(x=1.05, color='black', linestyle='-', linewidth=1.5)
+plt.axvline(x=1.2, color='black', linestyle='-', linewidth=1.5)
+
+
+plt.pcolormesh(Z_core, R_core, T_core, cmap='viridis', shading='auto', vmin=tmin, vmax=tmax)
+#plt.pcolormesh(Z_handle, R_handle, T_handle_flipped, cmap='viridis', shading='auto', vmin=tmin, vmax=tmax)
 plt.colorbar(label='Temperature (°C)')
 plt.xlabel('Axial position z (m)')
 plt.ylabel('Radial position r (m)')
-plt.title('Mirrored Temperature Distribution in Cylinder')
-#plt.axis('equal')
+plt.title('Temperature Distribution in Cylinder (Unmirrored)')
 plt.tight_layout()
 plt.show()
+
