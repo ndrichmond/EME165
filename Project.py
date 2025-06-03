@@ -31,8 +31,8 @@ def aCyl(r,h):
 
 #node variable setup
 n = 20  #number of nodes in the radial direction 
-m = 5 #number of nodes in the axial direction in the core
-M = 5  #number of nodes in the axial direction in the handle
+m = 200 #number of nodes in the axial direction in the core
+M = 20  #number of nodes in the axial direction in the handle
 
 nInd = n - 1 #for the purpose of indexing 
 mInd = m - 1 #for the purpose of indexing 
@@ -218,18 +218,19 @@ while deltaTcore > tolerance and iterationCounter < 10000:
         print(iterationCounter,deltaTcore)
     #print(T_core)
 
-#plot everything
-#print(T_core, T_handle)
+#---------------------#
+# Manipulate and Plot #
+#---------------------#
 
-T_core = T_core.copy() - 273.15
-T_handle = T_handle.copy() - 273.15
+T_coreC = T_core.copy() - 273.15
+T_handleC = T_handle.copy() - 273.15
 
-T_handle_flipped = np.zeros(T_handle.shape)
+T_handle_flipped = np.zeros(T_handleC.shape)
 i = 0
 while i < n:
     j = 0
     while j < M:
-        T_handle_flipped[i,j] = T_handle[i,MInd -j]
+        T_handle_flipped[i,j] = T_handleC[i,MInd -j]
         j += 1
     i += 1
 
@@ -240,9 +241,8 @@ print("T_handle:")
 print(T_handle)
 '''
 
-#plotting with the help of ChatGPT
-Nr, Nz_core = T_core.shape
-Nr, Nz_handle = T_handle.shape
+Nr, Nz_core = T_coreC.shape
+Nr, Nz_handle = T_handleC.shape
 
 # Define the original radial and axial coordinates
 r = np.linspace(0, r_core, Nr)
@@ -250,44 +250,40 @@ z_core = np.linspace(0, L_1, Nz_core)
 z_handle = np.linspace(-L_2, 0, Nz_handle)
 
 #correct the physical lengths to reflect the control volume sizes
-print(z_core)
-
-'''
 i = 1
-while i < len(z_core):
-    z_core[i] -= dx_c/4
+while i < max(len(z_core), len(z_handle), len(r)):
+    if i < len(z_core):
+        z_core[i] -= dx_c/2
+    if i < len(z_handle):
+        z_handle[i] -= dx_h/2
+    if i < len(r):
+        r[i] -= dr/2
     i += 1
-'''
-#z_core[len(z_core) - 2] += dx_c/4
-#z_core[len(z_core) - 1] -= dx_c/2
-#print(z_handle)
 
-print(z_core)
+z_core = np.append(z_core, z_core[-1] + dx_c/2)
+z_handle = np.append(z_handle, z_handle[-1] + dx_h/2)
+r = np.append(r, r[-1] + dr/2)
+
+#-------Plotting with the help of ChatGPT----------#
 
 # Meshgrid for plotting
 R_core, Z_core = np.meshgrid(r, z_core, indexing='ij')
 R_handle, Z_handle = np.meshgrid(r, z_handle, indexing='ij')
 
 # Get min/max for consistent color scaling
-tmin = min(T_core.min(), T_handle.min())
-tmax = max(T_core.max(), T_handle.max())
+tmin = min(T_coreC.min(), T_handleC.min())
+tmax = max(T_coreC.max(), T_handleC.max())
 
 # Plot
 plt.figure(figsize=(8, 5))
-plt.axvline(x=0, color='black', linestyle='-', linewidth=1.5)
-plt.axvline(x=0.15, color='black', linestyle='-', linewidth=1.5)
-plt.axvline(x=0.45, color='black', linestyle='-', linewidth=1.5)
-plt.axvline(x=0.75, color='black', linestyle='-', linewidth=1.5)
-plt.axvline(x=1.05, color='black', linestyle='-', linewidth=1.5)
-plt.axvline(x=1.2, color='black', linestyle='-', linewidth=1.5)
-
-
-plt.pcolormesh(Z_core, R_core, T_core, cmap='viridis', shading='auto', vmin=tmin, vmax=tmax)
-#plt.pcolormesh(Z_handle, R_handle, T_handle_flipped, cmap='viridis', shading='auto', vmin=tmin, vmax=tmax)
+#plt.axvline(x=0, color='white', linestyle='-', linewidth=1.5)
+plt.pcolormesh(Z_core, R_core, T_coreC, cmap='viridis', shading='flat', vmin=tmin, vmax=tmax)
+plt.pcolormesh(Z_handle, R_handle, T_handle_flipped, cmap='viridis', shading='flat', vmin=tmin, vmax=tmax)
 plt.colorbar(label='Temperature (°C)')
 plt.xlabel('Axial position z (m)')
 plt.ylabel('Radial position r (m)')
-plt.title('Temperature Distribution in Cylinder (Unmirrored)')
+plt.title('Temperature Distribution in Lightsaber')
 plt.tight_layout()
 plt.show()
+
 
